@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Coupons</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;700&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.typekit.net/xvh6jpz.css"> <!-- Futura PT font (Adobe Fonts) -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        h1, h2, h3, h4, .cta-button {
+            font-family: 'Albert Sans', sans-serif;
+        }
+        
+        .site-title {
+            font-family: 'futura-pt', sans-serif;
+            font-weight: 500;
+        }
+        
+        .section-container {
+            padding: 4rem 2rem;
+            position: relative;
+        }
+        
+        .section-separator {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            width: 90%;
+            margin: 0 auto;
+        }
+        
+        .nav-link {
+            position: relative;
+            padding-bottom: 3px;
+        }
+        
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover:after {
+            width: 100%;
+        }
+        
+        .feature-card {
+            height: 360px;
+            width: 320px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .primary-cta {
+            background-color: #FFCC00;
+            color: #222;
+            font-weight: bold;
+            padding: 0.75rem 2rem;
+            border-radius: 999px;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .primary-cta:hover {
+            background-color: #FFD700;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .secondary-cta {
+            background-color: #3B82F6;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .secondary-cta:hover {
+            background-color: #2563EB;
+        }
+        
+        .header-with-margin {
+            margin-top: 110px; /* Adjusted for taller header */
+        }
+        
+        .benefit-item {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease;
+        }
+        
+        .benefit-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 28px;
+        }
+        
+        .info-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #3B82F6;
+            font-weight: bold;
+        }
+        
+        .image-container {
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        .image-placeholder {
+            background-color: rgba(0, 0, 0, 0.1);
+            border: 2px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            height: 300px;
+            width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .about-container {
+            display: flex;
+            max-width: 1100px;
+            margin: 0 auto;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .about-content {
+            flex: 2;
+            text-align: left;
+        }
+        
+        .about-image {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .owner-photo-placeholder {
+            background-color: rgba(0, 0, 0, 0.1);
+            border: 2px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            height: 350px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <header class="bg-blue-700 text-white p-8 shadow-lg fixed w-full top-0 z-10">
+        <div class="container mx-auto flex flex-col items-center">
+            <h1 class="text-4xl font-bold site-title">The Local Bulletin</h1>
+            <nav class="mt-4">
+                <ul class="flex space-x-8">
+                    <li><a href="#home" class="nav-link text-lg">Home</a></li>
+                    <li><a href="#features" class="nav-link text-lg">Features</a></li>
+                    <li><a href="#products" class="nav-link text-lg">Products</a></li>
+                    <li><a href="#contact" class="nav-link text-lg">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="home" class="bg-cover bg-center h-screen flex items-center justify-center text-center text-white header-with-margin" style="background-image: url('images/milad.jpg'); background-color: #8C47FA;">
+    <div class="bg-black bg-opacity-60 p-8 rounded-lg max-w-3xl">
+        <h2 class="text-4xl font-bold mb-4">What It Is We Do</h2>
+        <p class="mt-6 text-xl"> The Local Bulletin offers a collaborative-streamlined direct mail service, making it easier and more affordable for local businesses to connect with their target market. We manage the entire process – from design to delivery – allowing you to focus on what you do best. Our co-op model provides a valuable platform for local businesses to showcase their offerings and build lasting relationships within the community.</p>
+        <a href="#coupons" class="mt-8 secondary-cta text-xl">Reserve Your Spot</a>
+    </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section class="section-container text-center text-white" style="background-color: #8C47FA;">
+        <h2 class="text-3xl font-bold mb-6">Email to Advertise</h2>
+        <p class="text-xl mb-2"><a href="mailto:localbulletin740@gmail.com" class="underline hover:text-yellow-300 transition">localbulletin740@gmail.com</a></p>
+        <p class="text-xl mb-8">or call/text <a href="tel:17409906133" class="underline hover:text-yellow-300 transition">740-990-6133</a></p>
+        <h3 class="text-2xl font-bold mt-10 mb-3">Next Mailing Scheduled</h3>
+        <p class="text-xl mb-8">for: <span class="font-bold text-yellow-300">First week of April, 2025</span></p>
+        <p class="mt-6 text-lg max-w-4xl mx-auto">We're thrilled to announce a game-changing marketing solution for Licking County businesses! Our upcoming 9"x12" postcard campaign is designed to deliver exceptional value by connecting you with a vast local audience. By collaborating with a limited number of non-competing businesses, we've created a cost-effective way to achieve high-impact direct mail marketing. This is your chance to showcase your services and become a recognized part of the community. Our first postcard is scheduled for April, and we're seeing tremendous interest. Don't delay – secure your place now! Contact us via email or text to discover how this strategic marketing initiative can benefit your business."</p>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section id="products" class="section-container text-center text-white" style="background-color: #8C47FA;">
+        <h2 class="text-3xl font-bold mb-8">How it works!</h2>
+        
+        <div class="flex flex-wrap justify-center gap-8 mt-10">
+            <div class="feature-card">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-blue-700">Pick your spot</h3>
+                    <p class="text-gray-700 text-lg">Look below to see an available spot you'd like to reserve.</p>
+                </div>
+                <button class="secondary-cta mt-6 w-full">Reserve Spot</button>
+            </div>
+            
+            <div class="feature-card">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-blue-700">Purchase your spot</h3>
+                    <p class="text-gray-700 text-lg">Reserve your spot for just $99. A reservation fee prevents any competitors on the card. Your remaining balance is due once it's ready for print.</p>
+                </div>
+                <button class="secondary-cta mt-6 w-full" style="background-color: #10B981;">Purchase Spot</button>
+            </div>
+            
+            <div class="feature-card">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-blue-700">Send your design</h3>
+                    <p class="text-gray-700 text-lg">Simply send your ad through email OR if you need help designing your ad, we can assist. Once you reserve your spot we'll create a mock design so you can see how it will look before it's sent out.</p>
+                </div>
+                <button class="secondary-cta mt-6 w-full" style="background-color: #6366F1;">Send Design</button>
+            </div>
+        </div>
+        
+        <div class="mt-16">
+            <a href="#" class="primary-cta">Purchase Your Spot &nbsp;»</a>
+        </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section id="features" class="section-container text-white" style="background-color: #8C47FA;">
+        <h2 class="text-3xl font-bold mb-10 text-center">Benefits of the 9X12 Postcard</h2>
+        
+        <div class="max-w-4xl mx-auto">
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>Cost-Effective Marketing</strong> – You share the mailing cost with 13-15 other businesses, making this way more affordable than a solo direct mail campaign.</p>
+            </div>
+            
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>Exclusive Business Category</strong> – You're the only business of your type featured. No competing ads on the same postcard!</p>
+            </div>
+            
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>Huge, Eye-Catching Format</strong> – Unlike regular-sized mailers that get lost in the shuffle, this 9x12 postcard stands out and demands attention.</p>
+            </div>
+            
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>No Mailing List Needed</strong> – We use EDDM to deliver to upscale 5,000 plus homes in the Licking County area, ensuring maximum exposure.</p>
+            </div>
+            
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>Tangible & Trusted</strong> – People trust direct mail more than digital ads. They hold onto it, stick it on the fridge, and refer back to it when they need services.</p>
+            </div>
+            
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>Higher ROI</strong> – Because the mailing is hyper-local, you're reaching people who are most likely to buy from you.</p>
+            </div>
+            
+            <div class="benefit-item">
+                <p class="text-xl"><span class="text-yellow-300 font-bold">👉</span> <strong>Bonus: Built-in Offers</strong> – You can include discounts, QR codes, or special promotions to drive action immediately!</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section class="section-container text-black text-center" style="background-color: #F6F1EB;">
+        <h2 class="text-3xl font-bold mb-6">Sizing and Cost</h2>
+        <p class="text-xl mb-3">- Ads are 4" H x 3" W for Medium, 4" H x 6" W for Large</p>
+        <p class="text-xl mb-4">- Actual sizes will vary to fit 9x12 postcard</p>
+        <p class="text-xl mb-6">- Medium Ad averages about 5 cents per household!</p>
+        
+        <!-- Reserved space for future images -->
+        <div class="image-container">
+    <img src="images/9x12 pricing w size.png" alt="Front of the Postcard" width="400" height="400" class="rounded-lg shadow-lg">
+    <img src="images/pricing back.png" alt="Back of the Postcard" width="400" height="400" class="rounded-lg shadow-lg">
+</div>
+
+        </div>
+        
+        <h2 class="text-3xl font-bold mt-12 mb-6">What information do you need to provide</h2>
+        <ul class="info-list text-xl max-w-lg mx-auto text-left mb-10">
+            <li>Company Name</li>
+            <li>Town/City</li>
+            <li>Phone</li>
+            <li>Website (If applicable)</li>
+            <li>Company Logo</li>
+            <li>Your Special Offer/Promo (great way to get an awesome response!)</li>
+        </ul>
+        
+        <div class="mt-12">
+            <a href="#" class="primary-cta">Reserve Your Spot Today &nbsp;»</a>
+        </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section class="section-container text-white" style="background-color: #8C47FA;" id="about">
+        <h2 class="text-3xl font-bold mb-10 text-center">About the Owner</h2>
+        
+        <div class="about-container">
+            <div class="about-content">
+                <p class="text-xl leading-relaxed">
+                   Hi there! I'm Robert Hall, and I've been fortunate to call Licking County home my entire life. As a fellow small business owner, I truly understand the passion and hard work it takes to build something from the ground up. I also know firsthand how vital marketing is to that success, and how challenging it can be to make it affordable.
+                </p>
+                <p class="text-xl leading-relaxed mt-4">
+   That's why I created The Local Bulletin. I wanted to offer a way for local businesses like ours to reach a wider audience without the overwhelming cost of traditional marketing. By bringing us together on a shared postcard, we can amplify our impact and make marketing accessible for everyone. It's not just about saving money; it's about seeing our community thrive, one successful business at a time.
+                </p>
+                <p class="text-xl leading-relaxed mt-4">
+                   I'm genuinely excited about the possibility of working alongside you and helping your business flourish. Please feel free to reach out with any questions – I'm here to help in any way I can.
+                </p>
+            </div>
+            <div class="about-image">
+                <div class="owner-photo-placeholder">
+       <img src="images/robhead.jpg" alt="Owner/ Robert Hall" width="400" height="400">
+			</div>
+    
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="bg-blue-900 text-white py-8 text-center">
+        <div class="container mx-auto">
+            <p>© 2025 The Local Bulletin. All rights reserved.</p>
+            <p class="mt-2">Contact us at <a href="mailto:localbulletin740@gmail.com" class="underline">localbulletin740@gmail.com</a></p>
+        </div>
+    </footer>
+
+</body>
+</html>
